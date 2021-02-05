@@ -48,5 +48,25 @@ app.post('/posts', async (req,res) => {
     title: title,
     message: message
   });
-  res.send(`{"title" : ${title}}, "message" : ${message}}`)
+  await posts.findOne({"title": title, "message": message}, function(err, result) {
+    if (err) throw err;
+    result ? res.send(result) : res.send("{\"status\" : \"error\"}");
+  });
+})
+
+app.put('/posts/:id', (req,res) => {
+  let title = req.body.title;
+  let message = req.body.message;
+  posts.updateOne({"_id": new ObjectID(req.params.id)}, {$set: {"title": title, "message": message}}, function(err, result) {
+    if (err) throw err;
+    result ? res.send("{\"status\" : \"ok\"}") : res.send("{\"status\" : \"error\"}")
+  })
+})
+
+app.delete('/posts/:id', (req,res) => {
+  posts.deleteOne({"_id": new ObjectID(req.params.id)}, function(err, result) {
+    if (err) throw err;
+    console.log(result)
+    result.deletedCount ? res.send("{\"status\" : \"ok\"}") : res.send("{\"status\" : \"error\"}")
+  })
 })
