@@ -1,10 +1,15 @@
 const express = require('express')
 const { MongoClient, ObjectID } = require("mongodb");
-const bodyParser = require("body-parser");
+
 const app = express()
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
+const bodyParser = require("body-parser");
 
 const uri = "mongodb://localhost:27017/todoapp";
 const client = new MongoClient(uri);
+
 let db,posts = {} 
 async function connectDB() {
   try {
@@ -22,19 +27,23 @@ connectDB()
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.listen(8079, () => {
+http.listen(8079, () => {
   console.log('Serveur listening on port 8079')
 })
 
-app.get('/posts', async (req,res) => {
-  posts.find({}, function(err, result) {
+
+app.use(express.static('front'));
+
+app.get('/posts',  (req,res) => {
+  posts.find({}).toArray(function(err, result) {
     if (err) throw err;
-    res.send(JSON.stringify(result));
+    console.log(result)
+    res.send(result);
   });
 })
 
-app.get('/posts/:id', (req,res) => {
-  posts.findOne({"_id": new ObjectID(req.params.id)}, function(err, result) {
+app.get('/posts/:id', async (req,res) => {
+  await posts.findOne({"_id": new ObjectID(req.params.id)}, function(err, result) {
     if (err) throw err;
     res.send(result);
   });
@@ -70,3 +79,7 @@ app.delete('/posts/:id', (req,res) => {
     result.deletedCount ? res.send("{\"status\" : \"ok\"}") : res.send("{\"status\" : \"error\"}")
   })
 })
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+});
