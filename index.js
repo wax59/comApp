@@ -6,6 +6,7 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser")
 
 const uri = "mongodb://localhost:27017/todoapp";
 const client = new MongoClient(uri);
@@ -26,13 +27,11 @@ connectDB()
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(express.static('front'));
 
 http.listen(8079, () => {
   console.log('Serveur listening on port 8079')
 })
-
-
-app.use(express.static('front'));
 
 app.get('/posts',  (req,res) => {
   posts.find({}).toArray(function(err, result) {
@@ -59,7 +58,12 @@ app.post('/posts', async (req,res) => {
   });
   await posts.findOne({"title": title, "message": message}, function(err, result) {
     if (err) throw err;
-    result ? res.send(result) : res.send("{\"status\" : \"error\"}");
+    if (result) {
+      res.send(result);
+      io.emit('new message', result);
+    } else {
+      res.send("{\"status\" : \"error\"}")
+    }
   });
 })
 

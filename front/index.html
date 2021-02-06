@@ -1,4 +1,35 @@
-<script src="/js/socket.io.js"></script>
-<script>
-  var socket = io();
-</script>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div id="posts">
+
+        </div>
+
+        <div id="add">
+        <form action="/posts" method="post">
+            <div>
+              <label for="title">Title: </label>
+              <input id="newTitle" type="text" name="title" id="title" required>
+            </div>
+            <div>
+              <label for="message">Message: </label>
+              <input id="newMessage" type="text" name="message" id="message" required>
+            </div>
+            <div>
+              <input id="submitMessage" type="button" value="Add message">
+            </div>
+          </form>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="/js/socket.io.js"></script>
+        <script>
+            var socket = io();
+        </script>
+        <script src="/js/main.js"></script>
+        
+
+    </body>
+</html>
