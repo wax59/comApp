@@ -1,3 +1,21 @@
+jQuery.each( [ "put", "delete" ], function( i, method ) {
+    jQuery[ method ] = function( url, data, callback, type ) {
+      if ( jQuery.isFunction( data ) ) {
+        type = type || callback;
+        callback = data;
+        data = undefined;
+      }
+  
+      return jQuery.ajax({
+        url: url,
+        type: method,
+        dataType: type,
+        data: data,
+        success: callback
+      });
+    };
+  });
+
 let posts;
 
 //INIT
@@ -7,8 +25,14 @@ fetch('/posts')
 .then(() => {
     posts.forEach(element => {
         let elem = document.createElement('div');
-        elem.innerHTML = `${element.title} <br> ${element.message}`;
+        elem.innerHTML =    `${element.title} <br>
+                             ${element.message} <br>
+                            <button class="deleteButton" id="${element._id}">Delete</button>`;
         document.body.appendChild(elem);
+        $( `#${element._id}` ).click(function(el) {
+            let id = $( `#${element._id}` ).attr('id')
+            $.delete( `/posts/${element._id}`);
+        });
     });
 })
 .catch(error => alert("Erreur : " + error));
@@ -17,6 +41,12 @@ fetch('/posts')
 $( "#submitMessage" ).click(function() {
     let title = $( "#newTitle" ).val()
     let message = $( "#newMessage" ).val()
+    $.post( "/posts", { "title": title, "message": message} );
+});
+
+//DELETE message
+$( ".deleteButton" ).click(function(el) {
+    let id = el.attr('id')
     $.post( "/posts", { "title": title, "message": message} );
 });
 

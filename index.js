@@ -17,7 +17,7 @@ async function connectDB() {
     await client.connect();
     db = client.db("todoapp")
     await db.command({ ping: 1 });
-    console.log("Connected successfully to server");
+    console.log("Connected successfully to Mongo");
     posts = db.collection("posts")
   } catch {
     console.dir
@@ -85,5 +85,5 @@ app.delete('/posts/:id', (req,res) => {
 })
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  console.log('SocketIO : new user connected');
 });
