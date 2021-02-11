@@ -49,16 +49,19 @@ app.get('/posts/:id', async (req,res) => {
 })
 
 app.post('/posts', async (req,res) => {
-  console.log(req.body)
+  let creator = req.body.creator;
   let title = req.body.title;
   let message = req.body.message;
   await posts.insertOne({
+    creator: creator,
     title: title,
-    message: message
+    message: message,
+    createdAt: Date()
   });
-  await posts.findOne({"title": title, "message": message}, function(err, result) {
+  await posts.findOne({"creator": creator, "title": title, "message": message}, function(err, result) {
     if (err) throw err;
     if (result) {
+      console.log(result)
       res.send(result);
       io.emit('new message', result);
     } else {
@@ -77,10 +80,17 @@ app.put('/posts/:id', (req,res) => {
 })
 
 app.delete('/posts/:id', (req,res) => {
-  posts.deleteOne({"_id": new ObjectID(req.params.id)}, function(err, result) {
+  let id = req.params.id
+  posts.deleteOne({"_id": new ObjectID(id)}, function(err, result) {
     if (err) throw err;
     console.log(result)
-    result.deletedCount ? res.send("{\"status\" : \"ok\"}") : res.send("{\"status\" : \"error\"}")
+    if(result.deletedCount){
+      res.send(`{"id": ${id}, "status" : "deleted"}`)
+      console.log('emit messagge')
+      io.emit('deleted message', `{"id":"${id}", "status":"deleted"}`)
+    } else {
+      res.send(`{"id": ${id}, "status" : "error"}`)
+    } 
   })
 })
 
