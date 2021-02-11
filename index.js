@@ -49,6 +49,7 @@ app.get('/posts/:id', async (req,res) => {
 })
 
 app.post('/posts', async (req,res) => {
+  console.log(req.body)
   let creator = req.body.creator;
   let title = req.body.title;
   let message = req.body.message;
@@ -71,11 +72,21 @@ app.post('/posts', async (req,res) => {
 })
 
 app.put('/posts/:id', (req,res) => {
-  let title = req.body.title;
+  let id = req.params.id;
   let message = req.body.message;
-  posts.updateOne({"_id": new ObjectID(req.params.id)}, {$set: {"title": title, "message": message}}, function(err, result) {
+  let lastModifiedBy = req.body.lastModifiedBy;
+  let lastModifyDate = req.body.lastModifyDate;
+  posts.updateOne({"_id": new ObjectID(id)}, {$set: {"lastModifiedBy": lastModifiedBy, "lastModifyDate": lastModifyDate, "message": message}}, function(err, result) {
     if (err) throw err;
-    result ? res.send("{\"status\" : \"ok\"}") : res.send("{\"status\" : \"error\"}")
+    if (result.modifiedCount) {
+      posts.findOne({"_id": new ObjectID(id)}, function(err, result) {
+        if (err) throw err;
+        io.emit('updated message', result)
+        res.send(`{"status" : "ok", ${result}}`)
+      });
+    } else {
+      res.send("{\"status\" : \"error\"}")
+    }
   })
 })
 
