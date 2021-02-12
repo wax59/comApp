@@ -46,35 +46,46 @@ function displayNewMessage(message){
                                 <button class="btn btn-secondary btn-sm editButton float-end" id="${message._id}">Edit</button>
                              </div>
                              <div class="collapse show collapse-message border-top border-1 mt-1" id="collapse${message._id}">
-                              <div class="messageMessage" id="${message._id}">${message.message}</div>
+                              <div class="messageMessage" id="${message._id}"></div>
                              </div>
                              </li>`;
         document.getElementById('posts').appendChild(elem);
         addDeleteButtonLogic(message._id);
         addEditButtonLogic(message._id);
         updateTitle(message)
+        updateMessage(message)
+}
+
+function updateMessage(message){
+  if (message.lastModifyDate) {
+    $( `#${message._id}.messageMessage` ).html(`${message.message} `);
+  } else {
+    $( `#${message._id}.messageMessage` ).html(`(${message.createdAt.substring(16, 21)} | ${message.creator}) : ${message.message}`);
+  }
 }
 
 function updateTitle(message){
   let diff = 0;
+  //If modified
   if(message.lastModifyDate){
     modify = new Date(message.lastModifyDate);
     diff = Math.floor((new Date() - modify) / 1000 / 60);
     if (diff > 59){
       min = diff % 60;
       hour = Math.floor(diff / 60);
-      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">(${message.creator}) - ${message.createdAt.substring(3, 21)} - modified ${hour}h${min}min ago</span>`);
+      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">- modified ${hour}h${min}min ago</span>`);
     } else {
-      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">(${message.creator}) - ${message.createdAt.substring(3, 21)} - modified ${diff}min ago</span>`);
+      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">- modified ${diff}min ago</span>`);
     }
   } else {
+    //If created
     diff = Math.floor((new Date() - new Date(message.createdAt)) / 1000 / 60);
     if (diff > 59){
       min = diff % 60;
       hour = Math.floor(diff / 60);
-      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">(${message.creator}) - ${message.createdAt.substring(3, 21)} - created ${hour}h${min}min ago</span>`);
+      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">- created ${hour}h${min}min ago</span>`);
     } else {
-      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">(${message.creator}) - ${message.createdAt.substring(3, 21)} - created ${diff}min ago</span>`);
+      $( `#${message._id}.messageTitle` ).html(`${message.title} <span class="fst-italic fs-6">- created ${diff}min ago</span>`);
     }
   }
 }
@@ -90,7 +101,9 @@ function deleteMessage(id) {
 }
 
 function addEditButtonLogic(id){
-  $( `#${id}.editButton` ).click(function(el) {
+    $( `#${id}.editButton` ).click(function(el) {
+    let das = $( "#das" ).val()
+    let date = new Date().toString();
     if ( $( `#collapse${id}` ).hasClass('show') != true){
       $( `#collapse${id}` ).addClass("show");
     }
@@ -102,17 +115,18 @@ function addEditButtonLogic(id){
     let editableText = $(`<textarea class="form-control messageMessage" id="${id}" rows="${nbLines + 3}" />`);
     editableText.val(divHtml);
     $(`#${id}.messageMessage`).replaceWith(editableText);
+    $(`#${id}.messageMessage`)[0].value += `\n(${date.substring(16, 21)} | ${das}) : `
     editableText.focus();
     editableText.blur(updateEditedMessage);
   });
 }
 
-async function updateEditedMessage(){
+function updateEditedMessage(){
   let id = $(this)[0].id
-  var text = $(this).val().replace(/\n/g, "<br />");
+  let text = $(this).val().replace(/\n/g, "<br />");
   let das = $( "#das" ).val()
-  await $.put( `/posts/${id}`, { "lastModifiedBy": das, "lastModifyDate": Date(), "message": text});
-  var divText = $(`<div class="messageMessage" id="${id}">`);
+  $.put( `/posts/${id}`, { "lastModifiedBy": das, "lastModifyDate": Date(), "message": text});
+  let divText = $(`<div class="messageMessage" id="${id}">`);
   divText.html(text);
   $(this).replaceWith(divText);
 }
@@ -137,6 +151,7 @@ $( "#submitButton" ).click(function(event) {
     } else {
       alert('Please enter all required fields');
     }
+    $( "#addForm" ).removeClass('show')
 });
 
 //Action on new message received
