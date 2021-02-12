@@ -36,7 +36,7 @@ http.listen(8079, () => {
 app.get('/posts',  (req,res) => {
   posts.find({}).toArray(function(err, result) {
     if (err) throw err;
-    console.log(result)
+    console.log('GET /posts')
     res.send(result);
   });
 })
@@ -94,10 +94,8 @@ app.delete('/posts/:id', (req,res) => {
   let id = req.params.id
   posts.deleteOne({"_id": new ObjectID(id)}, function(err, result) {
     if (err) throw err;
-    console.log(result)
     if(result.deletedCount){
       res.send(`{"id": ${id}, "status" : "deleted"}`)
-      console.log('emit messagge')
       io.emit('deleted message', `{"id":"${id}", "status":"deleted"}`)
     } else {
       res.send(`{"id": ${id}, "status" : "error"}`)

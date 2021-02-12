@@ -59,6 +59,7 @@ function displayNewMessage(message){
 function updateMessage(message){
   if (message.lastModifyDate) {
     $( `#${message._id}.messageMessage` ).html(`${message.message} `);
+    //Need to replace the message in the post array
   } else {
     $( `#${message._id}.messageMessage` ).html(`(${message.createdAt.substring(16, 21)} | ${message.creator}) : ${message.message}`);
   }
@@ -169,6 +170,9 @@ socket.on('deleted message', function(msg) {
 socket.on('updated message', function(msg) {
   $( `#${msg._id}.messageMessage` ).html(msg.message);
   updateTitle(msg)
+  fetch('/posts')
+  .then(response => response.json())
+  .then(response => posts = response)
 })
 
 
