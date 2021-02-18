@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static('front'));
 
-http.listen(8079, () => {
+http.listen(process.env.PORT || 8080, () => {
   console.log('Serveur listening on port 8079')
 })
 
